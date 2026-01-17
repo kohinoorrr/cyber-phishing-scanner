@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cyber Phishing Scanner</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ===== FLUID GLOW LAYERS ===== */
+.glow {
+    position: fixed;
+    width: 260px;
+    height: 260px;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(60px);
+    background: radial-gradient(circle, rgba(56,189,248,0.45), rgba(56,189,248,0.15), transparent 70%);
+    mix-blend-mode: screen;
+}
+
+/* ===== PANEL ===== */
+.panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(2,6,23,0.95);
+    border: 1px solid #1e293b;
+    border-radius: 18px;
+    padding: 30px;
+    width: 520px;
+    color: #e5e7eb;
+    box-shadow: 0 0 40px rgba(56,189,248,0.5);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    background: black;
+    border: 1px solid #334155;
+    color: white;
+    border-radius: 8px;
+}
+
+button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg,#2563eb,#22d3ee);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* ===== LOADER ===== */
+.loader {
+    margin-top: 15px;
+    height: 10px;
+    background: #020617;
+    border-radius: 50px;
+    overflow: hidden;
+    display: none;
+}
+
+.loader-bar {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg,#38bdf8,#0ea5e9);
+    border-radius: 50px;
+    animation: loading 1.2s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0%   { transform: translateX(-100%); }
+    50%  { transform: translateX(120%); }
+    100% { transform: translateX(-100%); }
+}
+
+
+/* ===== STATUS ===== */
+.status {
+    margin-top: 12px;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.safe { color: #22c55e; }
+.suspicious { color: #facc15; }
+.phishing { color: #ef4444; }
+
+/* ===== LEGEND ===== */
+.legend {
+    margin-top: 18px;
+    border-top: 1px solid #334155;
+    padding-top: 12px;
+    font-size: 14px;
+}
+
+.legend-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.green { background: #22c55e; }
+.yellow { background: #facc15; }
+.red { background: #ef4444; }
+
+/* ===== RADAR ===== */
+.radar {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 1px solid rgba(56,189,248,0.3);
+    top: -130px;
+    right: -130px;
+    overflow: hidden;
+    opacity: 0.4;
+}
+
+.radar::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(
+        from 0deg,
+        transparent,
+        rgba(56,189,248,0.4),
+        transparent
+    );
+    animation: sweep 2s linear infinite;
+}
+
+@keyframes sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ===== SPIDER RADAR PULSE ===== */
+.spider-radar {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    top: -140px;
+    right: -140px;
+    pointer-events: none;
+}
+
+.spider-radar::before,
+.spider-radar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(56,189,248,0.25);
+    animation: pulse 3s infinite;
+}
+
+.spider-radar::after {
+    animation-delay: 1.5s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 0;
+    }
+}
+
+
+/* ===== SCAN PERCENT ===== */
+.scan-percent {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 8px;
+    color: #38bdf8;
+    letter-spacing: 1px;
+}
+
+/* ===== NETWORK MAP ===== */
+.network {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+}
+
+.node {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid #334155;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    transition: 0.3s;
+}
+
+.node.active {
+    border-color: #38bdf8;
+    color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56,189,248,0.8);
+}
+
+.line {
+    flex: 1;
+    height: 2px;
+    background: #334155;
+}
+
+/* ===== ANALYSIS DETAILS ===== */
+.details {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #cbd5f5;
+    line-height: 1.6;
+    min-height: 40px;
+}
+
+.details span {
+    display: block;
+}
+
+
+
+
+</style>
+</head>
+
+<body>
+
+<div class="glow" id="glow1"></div>
+<div class="glow" id="glow2"></div>
+<div class="glow" id="glow3"></div>
+
+<div class="panel">
+<div class="radar"></div>
+<div class="spider-radar"></div>
+<div class="network">
+    <div class="node" id="node-user">YOU</div>
+    <div class="line"></div>
+    <div class="node" id="node-dns">DNS</div>
+    <div class="line"></div>
+    <div class="node" id="node-server">SERVER</div>
+</div>
+
+
+
+<h1>🕷️ Cyber Phishing Scanner</h1>
+
+<input id="urlInput" placeholder="Paste target URL">
+<button onclick="scan()">Initiate Scan</button>
+
+<div class="loader" id="loader">
+    <div class="loader-bar"></div>
+</div>
+
+<div id="status" class="status"></div>
+<div id="percent" class="scan-percent"></div>
+<div id="details" class="details"></div>
+
+
+
+<div class="legend">
+    <h3>⚠️ Risk Score Guide</h3>
+    <div class="legend-row">
+        <span><span class="dot green"></span>0–1</span><span>Safe</span>
+    </div>
+    <div class="legend-row">
+        <span><span class="dot yellow"></span>2–3</span><span>Suspicious</span>
+    </div>
+    <div class="legend-row">
+        <span><span class="dot red"></span>4+</span><span>Phishing</span>
+    </div>
+</div>
+
+</div>
+
+<script>
+const glow1 = document.getElementById("glow1");
+const glow2 = document.getElementById("glow2");
+const glow3 = document.getElementById("glow3");
+
+let mouseX = 0, mouseY = 0;
+let g1x = 0, g1y = 0;
+let g2x = 0, g2y = 0;
+let g3x = 0, g3y = 0;
+
+document.addEventListener("mousemove", e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
+
+// Fluid trailing animation
+function animateGlow() {
+    g1x += (mouseX - g1x) * 0.12;
+    g1y += (mouseY - g1y) * 0.12;
+
+    g2x += (g1x - g2x) * 0.08;
+    g2y += (g1y - g2y) * 0.08;
+
+    g3x += (g2x - g3x) * 0.05;
+    g3y += (g2y - g3y) * 0.05;
+
+    glow1.style.left = g1x + "px";
+    glow1.style.top = g1y + "px";
+
+    glow2.style.left = g2x + "px";
+    glow2.style.top = g2y + "px";
+
+    glow3.style.left = g3x + "px";
+    glow3.style.top = g3y + "px";
+
+    requestAnimationFrame(animateGlow);
+}
+animateGlow();
+
+
+function scan() {
+    const url = document.getElementById("urlInput").value;
+    const loader = document.getElementById("loader");
+    const status = document.getElementById("status");
+    const percentText = document.getElementById("percent");
+    const details = document.getElementById("details");
+
+    const nUser = document.getElementById("node-user");
+    const nDns = document.getElementById("node-dns");
+    const nServer = document.getElementById("node-server");
+    const radar = document.querySelector(".spider-radar");
+
+    // Reset UI
+    status.innerText = "";
+    status.className = "status";
+    details.innerHTML = "";
+    percentText.innerText = "Scanning...";
+    loader.style.display = "block";
+
+    if (radar) radar.style.opacity = "1";
+
+    // Activate network animation
+    nUser?.classList.add("active");
+    nDns?.classList.remove("active");
+    nServer?.classList.remove("active");
+
+    setTimeout(() => nDns?.classList.add("active"), 600);
+    setTimeout(() => nServer?.classList.add("active"), 1200);
+
+    // Fake progressive percent until backend responds
+    let percent = 0;
+    const interval = setInterval(() => {
+        percent += Math.random() * 6;
+        if (percent > 95) percent = 95;
+        percentText.innerText = "Scanning... " + Math.floor(percent) + "%";
+    }, 120);
+
+    fetch("/check", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ url })
+    })
+    .then(res => res.json())
+    .then(data => {
+        clearInterval(interval);
+        loader.style.display = "none";
+        percentText.innerText = "Scan Complete ✔";
+
+        // Show status
+        status.className = "status";
+        status.innerText = data.status + " | Risk Score: " + data.score;
+
+        if (data.status === "Safe") status.classList.add("safe");
+        if (data.status === "Suspicious") status.classList.add("suspicious");
+        if (data.status === "Phishing") status.classList.add("phishing");
+
+        // Show analysis details
+        details.innerHTML = "<strong>🔍 Analysis Details:</strong><br>";
+        data.reasons.forEach(r => {
+            let icon = "✔️";
+            if (r.toLowerCase().includes("invalid") || r.toLowerCase().includes("error")) icon = "❌";
+            if (r.toLowerCase().includes("suspicious")) icon = "⚠️";
+            if (r.toLowerCase().includes("ai")) icon = "🤖";
+
+            details.innerHTML += `<span>${icon} ${r}</span>`;
+        });
+
+        // Stop network animation
+        nUser?.classList.remove("active");
+        nDns?.classList.remove("active");
+        nServer?.classList.remove("active");
+
+        // Dim radar after scan
+        if (radar) radar.style.opacity = "0.3";
+    })
+    .catch(err => {
+        clearInterval(interval);
+        loader.style.display = "none";
+        percentText.innerText = "Scan Failed ❌";
+        console.error(err);
+    });
+}
+
+
+</script>
+
+</body>
+</html>
