@@ -93,7 +93,7 @@ def analyze_url(url):
         reasons.append("DNS timeout")
 
     elif dns_result["status"] == "nxdomain":
-        score += 1
+        score += 5
         reasons.append("Domain does not exist")
 
     else:
