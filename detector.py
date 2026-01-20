@@ -37,7 +37,7 @@ def analyze_url(url):
         reasons.append("URL is very long")
 
     if re.search(r"\d+\.\d+\.\d+\.\d+", url):
-        score += 2
+        score += 1
         reasons.append("IP address used instead of domain")
 
     for word in SUSPICIOUS_KEYWORDS:
@@ -58,13 +58,13 @@ def analyze_url(url):
     domain = get_domain(url)
     dot_count = domain.count(".")
     if dot_count >= 4:
-        score += 2
+        score += 1
         reasons.append("Too many subdomains")
 
     # ---------- URL SHORTENER ----------
     for short in URL_SHORTENERS:
         if short in domain:
-            score += 3
+            score += 1
             reasons.append("URL shortener detected")
 
     # ---------- NUMBER HEAVY URL ----------
@@ -76,7 +76,7 @@ def analyze_url(url):
     # ---------- REDIRECT CHECK ----------
     redirects = count_redirects(url)
     if redirects >= 3:
-        score += 2
+        score += 1
         reasons.append(f"Multiple redirects detected ({redirects})")
 
     # ---------- DNS CHECK ----------
@@ -89,11 +89,11 @@ def analyze_url(url):
             reasons.append("DNS response slow")
 
     elif dns_result["status"] == "timeout":
-        score += 2
+        score += 1
         reasons.append("DNS timeout")
 
     elif dns_result["status"] == "nxdomain":
-        score += 3
+        score += 1
         reasons.append("Domain does not exist")
 
     else:
