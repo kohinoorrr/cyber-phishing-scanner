@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Models
+*.pkl
+*.h5
+*.model

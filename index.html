@@ -1,435 +1,822 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Cyber Phishing Scanner</title>
+    <title>Cyber Phishing Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
-<style>
-body {
-    margin: 0;
-    background: black;
-    overflow: hidden;
-    font-family: 'Segoe UI', sans-serif;
-}
+    <style>
+        :root {
+            --bg-base: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.65);
+            --border-hl: rgba(56, 189, 248, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #0ea5e9;
+            --accent-glow: rgba(14, 165, 233, 0.4);
+            --safe: #10b981;
+            --suspicious: #f59e0b;
+            --phishing: #ef4444;
+        }
 
-/* ===== FLUID GLOW LAYERS ===== */
-.glow {
-    position: fixed;
-    width: 260px;
-    height: 260px;
-    pointer-events: none;
-    border-radius: 50%;
-    filter: blur(60px);
-    background: radial-gradient(circle, rgba(56,189,248,0.45), rgba(56,189,248,0.15), transparent 70%);
-    mix-blend-mode: screen;
-}
+        body {
+            margin: 0;
+            background: var(--bg-base);
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+        }
 
-/* ===== PANEL ===== */
-.panel {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(2,6,23,0.95);
-    border: 1px solid #1e293b;
-    border-radius: 18px;
-    padding: 30px;
-    width: 520px;
-    color: #e5e7eb;
-    box-shadow: 0 0 40px rgba(56,189,248,0.5);
-}
+        /* ===== FLUID GLOW LAYERS ===== */
+        .glow {
+            position: fixed;
+            width: 350px;
+            height: 350px;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(80px);
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.25), transparent 70%);
+            mix-blend-mode: screen;
+            z-index: 0;
+        }
 
-h1 {
-    text-align: center;
-    margin-bottom: 10px;
-}
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            grid-template-columns: 480px 520px;
+            gap: 35px;
+            width: 1035px;
+            z-index: 10;
+        }
 
-input {
-    width: 100%;
-    padding: 12px;
-    background: black;
-    border: 1px solid #334155;
-    color: white;
-    border-radius: 8px;
-}
+        /* ===== PANEL ===== */
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(14, 165, 233, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
 
-button {
-    margin-top: 12px;
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(90deg,#2563eb,#22d3ee);
-    border: none;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-}
+        /* Left Panel specific overrides */
+        .panel-left {
+            position: relative;
+        }
 
-/* ===== LOADER ===== */
-.loader {
-    margin-top: 15px;
-    height: 10px;
-    background: #020617;
-    border-radius: 50px;
-    overflow: hidden;
-    display: none;
-}
+        /* Right Panel specific overrides */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+        }
 
-.loader-bar {
-    height: 100%;
-    width: 40%;
-    background: linear-gradient(90deg,#38bdf8,#0ea5e9);
-    border-radius: 50px;
-    animation: loading 1.2s ease-in-out infinite;
-}
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-@keyframes loading {
-    0%   { transform: translateX(-100%); }
-    50%  { transform: translateX(120%); }
-    100% { transform: translateX(-100%); }
-}
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
 
+        /* ===== INPUTS & CONTROLS ===== */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
 
-/* ===== STATUS ===== */
-.status {
-    margin-top: 12px;
-    font-size: 18px;
-    text-align: center;
-    font-weight: bold;
-}
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
 
-.safe { color: #22c55e; }
-.suspicious { color: #facc15; }
-.phishing { color: #ef4444; }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+            background: rgba(0, 0, 0, 0.6);
+        }
 
-/* ===== LEGEND ===== */
-.legend {
-    margin-top: 18px;
-    border-top: 1px solid #334155;
-    padding-top: 12px;
-    font-size: 14px;
-}
+        input::placeholder {
+            color: #475569;
+            font-family: 'Outfit', sans-serif;
+        }
 
-.legend-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 6px 0;
-}
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.5px;
+        }
 
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 6px;
-}
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.6);
+            background: linear-gradient(135deg, #38bdf8, #60a5fa);
+        }
 
-.green { background: #22c55e; }
-.yellow { background: #facc15; }
-.red { background: #ef4444; }
+        button:active {
+            transform: translateY(1px);
+        }
 
-/* ===== RADAR ===== */
-.radar {
-    position: absolute;
-    width: 260px;
-    height: 260px;
-    border-radius: 50%;
-    border: 1px solid rgba(56,189,248,0.3);
-    top: -130px;
-    right: -130px;
-    overflow: hidden;
-    opacity: 0.4;
-}
+        /* ===== PREVIEW AREA ===== */
+        .preview-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-main);
+        }
 
-.radar::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: conic-gradient(
-        from 0deg,
-        transparent,
-        rgba(56,189,248,0.4),
-        transparent
-    );
-    animation: sweep 2s linear infinite;
-}
+        .preview-status {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-@keyframes sweep {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+        .preview-window {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #475569;
+            box-shadow: inset 0 2px 15px rgba(0, 0, 0, 0.5);
+        }
 
-/* ===== SPIDER RADAR PULSE ===== */
-.spider-radar {
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    top: -140px;
-    right: -140px;
-    pointer-events: none;
-}
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: top;
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-.spider-radar::before,
-.spider-radar::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(56,189,248,0.25);
-    animation: pulse 3s infinite;
-}
+        #preview-placeholder {
+            font-weight: 300;
+            text-align: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
 
-.spider-radar::after {
-    animation-delay: 1.5s;
-}
+        /* ===== LOADER ===== */
+        .loader {
+            margin-top: 20px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-@keyframes pulse {
-    0% {
-        transform: scale(0.2);
-        opacity: 0.8;
-    }
-    100% {
-        transform: scale(1.1);
-        opacity: 0;
-    }
-}
+        .loader-bar {
+            height: 100%;
+            width: 30%;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            border-radius: 10px;
+            animation: loading 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
 
+        @keyframes loading {
+            0% {
+                transform: translateX(-150%);
+            }
 
-/* ===== SCAN PERCENT ===== */
-.scan-percent {
-    text-align: center;
-    font-size: 14px;
-    margin-top: 8px;
-    color: #38bdf8;
-    letter-spacing: 1px;
-}
-
-/* ===== NETWORK MAP ===== */
-.network {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 18px;
-}
-
-.node {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    border: 2px solid #334155;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    color: #94a3b8;
-    transition: 0.3s;
-}
-
-.node.active {
-    border-color: #38bdf8;
-    color: #38bdf8;
-    box-shadow: 0 0 15px rgba(56,189,248,0.8);
-}
-
-.line {
-    flex: 1;
-    height: 2px;
-    background: #334155;
-}
-
-/* ===== ANALYSIS DETAILS ===== */
-.details {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #cbd5f5;
-    line-height: 1.6;
-    min-height: 40px;
-}
-
-.details span {
-    display: block;
-}
+            100% {
+                transform: translateX(350%);
+            }
+        }
 
 
+        /* ===== STATUS ===== */
+        .status {
+            margin-top: 15px;
+            font-size: 20px;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .safe {
+            color: var(--safe);
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .suspicious {
+            color: var(--suspicious);
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .phishing {
+            color: var(--phishing);
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+
+        /* ===== LEGEND ===== */
+        .legend {
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            font-size: 13px;
+        }
+
+        .legend h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .legend-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            color: var(--text-main);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .green {
+            color: var(--safe);
+            background: var(--safe);
+        }
+
+        .yellow {
+            color: var(--suspicious);
+            background: var(--suspicious);
+        }
+
+        .red {
+            color: var(--phishing);
+            background: var(--phishing);
+        }
+
+        /* ===== RADAR ===== */
+        .radar {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            top: -150px;
+            right: -150px;
+            overflow: hidden;
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .radar::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg,
+                    transparent 70%,
+                    rgba(14, 165, 233, 0.1) 80%,
+                    rgba(14, 165, 233, 0.4) 100%);
+            animation: sweep 3s linear infinite;
+        }
+
+        @keyframes sweep {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== SPIDER RADAR PULSE ===== */
+        .spider-radar {
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            top: -170px;
+            right: -170px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .spider-radar::before,
+        .spider-radar::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            animation: pulse 4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+        }
+
+        .spider-radar::after {
+            animation-delay: 2s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
+        }
 
 
-</style>
+        /* ===== SCAN PERCENT ===== */
+        .scan-percent {
+            text-align: center;
+            font-size: 13px;
+            margin-top: 10px;
+            color: var(--accent-primary);
+            font-family: 'Fira Code', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* ===== NETWORK MAP ===== */
+        .network {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 25px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .node {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .node.active {
+            border-color: var(--accent-primary);
+            color: var(--text-main);
+            background: rgba(14, 165, 233, 0.2);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4), inset 0 0 10px rgba(14, 165, 233, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .line {
+            flex: 1;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            transform: translateX(-100%);
+            transition: transform 0s;
+        }
+
+        .line.active::after {
+            animation: dataFlow 1s linear infinite;
+        }
+
+        @keyframes dataFlow {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+
+        /* ===== ANALYSIS DETAILS ===== */
+        .details {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.8;
+            min-height: 50px;
+            position: relative;
+            z-index: 10;
+            font-family: 'Fira Code', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px;
+        }
+
+        .details strong {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .details span {
+            display: block;
+            margin-bottom: 4px;
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Stagger animations for list items */
+        .details span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .details span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .details span:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .details span:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .details span:nth-child(6) {
+            animation-delay: 0.5s;
+        }
+
+        .details span:nth-child(7) {
+            animation-delay: 0.6s;
+        }
+
+
+        .panel-content {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="glow" id="glow1"></div>
-<div class="glow" id="glow2"></div>
-<div class="glow" id="glow3"></div>
+    <div class="glow" id="glow1"></div>
+    <div class="glow" id="glow2"></div>
 
-<div class="panel">
-<div class="radar"></div>
-<div class="spider-radar"></div>
-<div class="network">
-    <div class="node" id="node-user">YOU</div>
-    <div class="line"></div>
-    <div class="node" id="node-dns">DNS</div>
-    <div class="line"></div>
-    <div class="node" id="node-server">SERVER</div>
-</div>
+    <div class="container">
+        <!-- LEFT PANEL: Controls -->
+        <div class="panel panel-left">
+            <div class="radar"></div>
+            <div class="spider-radar"></div>
 
+            <div class="panel-content">
+                <h1>Cyber Phishing Scanner</h1>
+                <div class="subtitle">AI Threat Detection Engine</div>
 
+                <div class="input-wrapper">
+                    <input id="urlInput" placeholder="Enter target URL (e.g. https://example.com)">
+                </div>
+                <button onclick="scan()">Initiate Threat Analysis</button>
 
-<h1>🕷️ Cyber Phishing Scanner</h1>
+                <div class="network">
+                    <div class="node" id="node-user">USER</div>
+                    <div class="line" id="line-1"></div>
+                    <div class="node" id="node-dns">DNS</div>
+                    <div class="line" id="line-2"></div>
+                    <div class="node" id="node-server">HOST</div>
+                </div>
 
-<input id="urlInput" placeholder="Paste target URL">
-<button onclick="scan()">Initiate Scan</button>
+                <div class="loader" id="loader">
+                    <div class="loader-bar"></div>
+                </div>
 
-<div class="loader" id="loader">
-    <div class="loader-bar"></div>
-</div>
+                <div id="status" class="status"></div>
+                <div id="percent" class="scan-percent"></div>
+                <div id="details" class="details" style="display: none;"></div>
 
-<div id="status" class="status"></div>
-<div id="percent" class="scan-percent"></div>
-<div id="details" class="details"></div>
+                <div class="legend">
+                    <h3>Risk Score Confidence</h3>
+                    <div class="legend-row">
+                        <span><span class="dot green"></span>0–3</span><span>Safe Site</span>
+                    </div>
+                    <div class="legend-row">
+                        <span><span class="dot yellow"></span>4–7</span><span>Suspicious</span>
+                    </div>
+                    <div class="legend-row">
+                        <span><span class="dot red"></span>7+</span><span>Phishing Threat</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- RIGHT PANEL: Preview -->
+        <div class="panel panel-right">
+            <div class="preview-title">
+                Live Target Intelligence
+                <span class="preview-status" id="preview-status">Awaiting Input...</span>
+            </div>
+            <div class="preview-window">
+                <span id="preview-placeholder">Target website rendering will appear here upon scan initiation.</span>
+                <img id="preview-img" class="preview-frame" alt="Target Preview" src="" style="display: none;"
+                    onerror="handlePreviewError()" />
+            </div>
+        </div>
 
-
-<div class="legend">
-    <h3>⚠️ Risk Score Guide</h3>
-    <div class="legend-row">
-        <span><span class="dot green"></span>0–3</span><span>Safe</span>
     </div>
-    <div class="legend-row">
-        <span><span class="dot yellow"></span>4–7</span><span>Suspicious</span>
-    </div>
-    <div class="legend-row">
-        <span><span class="dot red"></span>7+</span><span>Phishing</span>
-    </div>
-</div>
 
-</div>
+    <script>
+        const glow1 = document.getElementById("glow1");
+        const glow2 = document.getElementById("glow2");
 
-<script>
-const glow1 = document.getElementById("glow1");
-const glow2 = document.getElementById("glow2");
-const glow3 = document.getElementById("glow3");
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let g1x = mouseX, g1y = mouseY;
+        let g2x = mouseX, g2y = mouseY;
 
-let mouseX = 0, mouseY = 0;
-let g1x = 0, g1y = 0;
-let g2x = 0, g2y = 0;
-let g3x = 0, g3y = 0;
-
-document.addEventListener("mousemove", e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
-
-// Fluid trailing animation
-function animateGlow() {
-    g1x += (mouseX - g1x) * 0.12;
-    g1y += (mouseY - g1y) * 0.12;
-
-    g2x += (g1x - g2x) * 0.08;
-    g2y += (g1y - g2y) * 0.08;
-
-    g3x += (g2x - g3x) * 0.05;
-    g3y += (g2y - g3y) * 0.05;
-
-    glow1.style.left = g1x + "px";
-    glow1.style.top = g1y + "px";
-
-    glow2.style.left = g2x + "px";
-    glow2.style.top = g2y + "px";
-
-    glow3.style.left = g3x + "px";
-    glow3.style.top = g3y + "px";
-
-    requestAnimationFrame(animateGlow);
-}
-animateGlow();
-
-
-function scan() {
-    const url = document.getElementById("urlInput").value;
-    const loader = document.getElementById("loader");
-    const status = document.getElementById("status");
-    const percentText = document.getElementById("percent");
-    const details = document.getElementById("details");
-
-    const nUser = document.getElementById("node-user");
-    const nDns = document.getElementById("node-dns");
-    const nServer = document.getElementById("node-server");
-    const radar = document.querySelector(".spider-radar");
-
-    // Reset UI
-    status.innerText = "";
-    status.className = "status";
-    details.innerHTML = "";
-    percentText.innerText = "Scanning...";
-    loader.style.display = "block";
-
-    if (radar) radar.style.opacity = "1";
-
-    // Activate network animation
-    nUser?.classList.add("active");
-    nDns?.classList.remove("active");
-    nServer?.classList.remove("active");
-
-    setTimeout(() => nDns?.classList.add("active"), 600);
-    setTimeout(() => nServer?.classList.add("active"), 1200);
-
-    // Fake progressive percent until backend responds
-    let percent = 0;
-    const interval = setInterval(() => {
-        percent += Math.random() * 6;
-        if (percent > 95) percent = 95;
-        percentText.innerText = "Scanning... " + Math.floor(percent) + "%";
-    }, 120);
-
-    fetch("/check", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ url })
-    })
-    .then(res => res.json())
-    .then(data => {
-        clearInterval(interval);
-        loader.style.display = "none";
-        percentText.innerText = "Scan Complete ✔";
-
-        // Show status
-        status.className = "status";
-        status.innerText = data.status + " | Risk Score: " + data.score;
-
-        if (data.status === "Safe") status.classList.add("safe");
-        if (data.status === "Suspicious") status.classList.add("suspicious");
-        if (data.status === "Phishing") status.classList.add("phishing");
-
-        // Show analysis details
-        details.innerHTML = "<strong>🔍 Analysis Details:</strong><br>";
-        data.reasons.forEach(r => {
-            let icon = "✔️";
-            if (r.toLowerCase().includes("invalid") || r.toLowerCase().includes("error")) icon = "❌";
-            if (r.toLowerCase().includes("suspicious")) icon = "⚠️";
-            if (r.toLowerCase().includes("ai")) icon = "🤖";
-
-            details.innerHTML += `<span>${icon} ${r}</span>`;
+        document.addEventListener("mousemove", e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
         });
 
-        // Stop network animation
-        nUser?.classList.remove("active");
-        nDns?.classList.remove("active");
-        nServer?.classList.remove("active");
+        // Ambient floating animation for background gradients
+        function animateGlow() {
+            g1x += (mouseX - g1x) * 0.05;
+            g1y += (mouseY - g1y) * 0.05;
 
-        // Dim radar after scan
-        if (radar) radar.style.opacity = "0.3";
-    })
-    .catch(err => {
-        clearInterval(interval);
-        loader.style.display = "none";
-        percentText.innerText = "Scan Failed ❌";
-        console.error(err);
-    });
-}
+            // Opposite drift for depth
+            g2x += ((window.innerWidth - mouseX) - g2x) * 0.02;
+            g2y += ((window.innerHeight - mouseY) - g2y) * 0.02;
 
+            glow1.style.left = (g1x - 175) + "px";
+            glow1.style.top = (g1y - 175) + "px";
 
-</script>
+            glow2.style.left = (g2x - 175) + "px";
+            glow2.style.top = (g2y - 175) + "px";
+
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+
+        function handlePreviewError() {
+            const previewImg = document.getElementById("preview-img");
+            const previewStatus = document.getElementById("preview-status");
+            const previewPlaceholder = document.getElementById("preview-placeholder");
+
+            previewImg.style.display = "none";
+            previewPlaceholder.style.display = "block";
+            previewPlaceholder.innerHTML = "<span style='color: var(--phishing); font-size: 24px; display: block; margin-bottom: 10px;'>⚠</span> Request Blocked or Timing Out<br>The host refused the connection or is offline.";
+            previewStatus.innerText = "Capture Failed";
+            previewStatus.style.color = "var(--phishing)";
+            previewStatus.style.borderColor = "rgba(239, 68, 68, 0.3)";
+            previewStatus.style.background = "rgba(239, 68, 68, 0.1)";
+        }
+
+        function scan() {
+            let url = document.getElementById("urlInput").value.trim();
+            if (!url) return;
+
+            // Auto-fix missing protocol
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "https://" + url;
+                document.getElementById("urlInput").value = url;
+            }
+
+            const loader = document.getElementById("loader");
+            const status = document.getElementById("status");
+            const percentText = document.getElementById("percent");
+            const details = document.getElementById("details");
+
+            const nUser = document.getElementById("node-user");
+            const nDns = document.getElementById("node-dns");
+            const nServer = document.getElementById("node-server");
+            const l1 = document.getElementById("line-1");
+            const l2 = document.getElementById("line-2");
+
+            const radar = document.querySelector(".spider-radar");
+
+            // Preview UI
+            const previewImg = document.getElementById("preview-img");
+            const previewStatus = document.getElementById("preview-status");
+            const previewPlaceholder = document.getElementById("preview-placeholder");
+
+            // Reset UI
+            status.innerText = "";
+            status.className = "status";
+            details.innerHTML = "";
+            details.style.display = "none";
+            percentText.innerText = "Initializing Protocols...";
+            loader.style.display = "block";
+
+            // Set Preview State
+            previewImg.style.display = "none";
+            previewImg.style.opacity = 0;
+            previewPlaceholder.style.display = "block";
+            previewPlaceholder.innerText = "Intercepting visual render...";
+            previewStatus.innerText = "Capturing...";
+            previewStatus.style.color = "var(--accent-primary)";
+            previewStatus.style.borderColor = "var(--accent-glow)";
+            previewStatus.style.background = "rgba(14, 165, 233, 0.1)";
+
+            // Request Microlink Screenshot API
+            const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false&embed=screenshot.url`;
+            previewImg.src = microlinkUrl;
+            previewImg.onload = () => {
+                previewImg.style.display = "block";
+                // Small timeout to allow display:block to apply before opacity transition
+                setTimeout(() => previewImg.style.opacity = 1, 50);
+                previewPlaceholder.style.display = "none";
+                previewStatus.innerText = "Target Rendering Complete";
+                previewStatus.style.color = "var(--safe)";
+                previewStatus.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                previewStatus.style.background = "rgba(16, 185, 129, 0.1)";
+            };
+
+            if (radar) radar.style.opacity = "1";
+
+            // Activate network animation sequence
+            nUser?.classList.remove("active");
+            nDns?.classList.remove("active");
+            nServer?.classList.remove("active");
+            l1?.classList.remove("active");
+            l2?.classList.remove("active");
+
+            setTimeout(() => {
+                nUser?.classList.add("active");
+                l1?.classList.add("active");
+            }, 100);
+
+            setTimeout(() => {
+                nDns?.classList.add("active");
+                l1?.classList.remove("active");
+                l2?.classList.add("active");
+            }, 800);
+
+            setTimeout(() => {
+                nServer?.classList.add("active");
+                l2?.classList.remove("active");
+            }, 1600);
+
+            // Fake progressive percent until backend responds
+            let percent = 0;
+            const interval = setInterval(() => {
+                percent += Math.random() * 8;
+                if (percent > 92) percent = 92;
+                percentText.innerText = "Extracting Features [" + Math.floor(percent) + "%]";
+            }, 150);
+
+            fetch("/check", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    clearInterval(interval);
+                    loader.style.display = "none";
+                    percentText.innerText = "Analysis Concluded ✔";
+
+                    details.style.display = "block";
+
+                    if (data.error) {
+                        status.innerText = "ACCESS DENIED";
+                        status.classList.add("phishing");
+                        details.innerHTML = `<span>[!] ${data.error}</span>`;
+                        return;
+                    }
+
+                    // Show status
+                    status.className = "status";
+                    status.innerText = data.status.toUpperCase() + " | THREAT SCORE: " + data.score;
+
+                    if (data.status === "Safe") status.classList.add("safe");
+                    if (data.status === "Suspicious") status.classList.add("suspicious");
+                    if (data.status === "Phishing") status.classList.add("phishing");
+
+                    // Show analysis details
+                    details.innerHTML = "<strong>Extracted Telemetry:</strong>";
+                    data.reasons.forEach(r => {
+                        let icon = "[OK]";
+                        let color = "var(--safe)";
+
+                        if (r.toLowerCase().includes("invalid") || r.toLowerCase().includes("error")) {
+                            icon = "[ERR]";
+                            color = "var(--phishing)";
+                        }
+                        else if (r.toLowerCase().includes("suspicious") || r.toLowerCase().includes("too many") || r.toLowerCase().includes("does not exist") || r.toLowerCase().includes("shortener") || r.toLowerCase().includes("long") || r.toLowerCase().includes("ip address")) {
+                            icon = "[WARN]";
+                            color = "var(--suspicious)";
+                        }
+                        else if (r.toLowerCase().includes("ai")) {
+                            icon = "[AI]";
+                            color = "var(--accent-primary)";
+                        }
+
+                        details.innerHTML += `<span style="color: ${color}">${icon} ${r}</span>`;
+                    });
+
+                    // Dim radar after scan
+                    if (radar) radar.style.opacity = "0.2";
+
+                    // Finalize network lines
+                    setTimeout(() => {
+                        l1?.classList.remove("active");
+                        l2?.classList.remove("active");
+                    }, 500);
+
+                })
+                .catch(err => {
+                    clearInterval(interval);
+                    loader.style.display = "none";
+                    percentText.innerText = "CONNECTION FAILED";
+                    console.error(err);
+                });
+        }
+    </script>
 
 </body>
+
 </html>
