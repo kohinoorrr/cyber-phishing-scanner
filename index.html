@@ -798,6 +798,16 @@
                         details.innerHTML += `<span style="color: ${color}">${icon} ${r}</span>`;
                     });
 
+                    if (data.technologies && data.technologies.length > 0) {
+                        details.innerHTML += "<br><strong>Detected Technologies:</strong>";
+                        let techHtml = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; margin-bottom: 10px;">';
+                        data.technologies.forEach(tech => {
+                            techHtml += `<div style="background: rgba(14, 165, 233, 0.2); border: 1px solid rgba(14, 165, 233, 0.4); padding: 4px 10px; border-radius: 12px; color: var(--text-main); font-size: 12px; display: inline-block;">${tech}</div>`;
+                        });
+                        techHtml += '</div>';
+                        details.innerHTML += techHtml;
+                    }
+
                     // Dim radar after scan
                     if (radar) radar.style.opacity = "0.2";
 

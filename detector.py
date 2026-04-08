@@ -4,6 +4,13 @@ import requests
 from dns_checker import dns_check
 from ssl_checker import check_ssl
 from ai_detector import ai_predict
+from Wappalyzer import Wappalyzer, WebPage
+
+try:
+    wappalyzer = Wappalyzer.latest()
+except Exception as e:
+    print(f"Warning: Wappalyzer initialization failed - {e}")
+    wappalyzer = None
 
 
 
@@ -119,13 +126,23 @@ def analyze_url(url):
         status = "Suspicious"
     else:
         status = "Safe"
-        # ---------- AI PREDICTION ----------
+    # ---------- AI PREDICTION ----------
     ai_result = ai_predict(url)
 
     reasons.append(f"AI Prediction: {ai_result['prediction']} ({ai_result['confidence']}%)")
 
     if ai_result["prediction"] == "Phishing":
         score += 2
+
+    # ---------- WAPPALYZER ----------
+    found_technologies = []
+    if wappalyzer:
+        try:
+            webpage = WebPage.new_from_url(url)
+            techs = wappalyzer.analyze(webpage)
+            found_technologies = list(techs)
+        except Exception as e:
+            print(f"Wappalyzer analysis failed: {e}")
 
     return {
         "url": url,
@@ -136,4 +153,5 @@ def analyze_url(url):
         "status": status,
         "reasons": reasons,
         "ai": ai_result,
+        "technologies": found_technologies,
     }
