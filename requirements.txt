@@ -1,10 +1,8 @@
-﻿flask
-flask-cors
-dnspython
-requests
-joblib
-scikit-learn
-
-python-Wappalyzer
-
-setuptools
+﻿flask
+flask-cors
+dnspython
+requests
+joblib
+scikit-learn
+python-Wappalyzer
+setuptools
