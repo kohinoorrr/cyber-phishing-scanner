@@ -1,4 +1,3 @@
--c
 flask
 flask-cors
 dnspython
