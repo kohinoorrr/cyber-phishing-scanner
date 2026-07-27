@@ -1,4 +1,5 @@
-﻿flask
+-c
+flask
 flask-cors
 dnspython
 requests
