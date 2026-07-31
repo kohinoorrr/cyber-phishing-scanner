@@ -1,14 +1,14 @@
-# 🕷️ Cyber Phishing Scanner
+#  Cyber Phishing Scanner
 
 A web-based cybersecurity tool that detects phishing URLs using:
 
-- ✅ URL feature analysis
-- 🌐 DNS resolution checks
-- 🔐 SSL certificate validation
-- 🤖 Machine Learning prediction
-- 🎨 Cyber-themed animated UI
+-  URL feature analysis
+-  DNS resolution checks
+-  SSL certificate validation
+-  Machine Learning prediction
+-  Cyber-themed animated UI
 
-## 🚀 Features
+##  Features
 - Real-time phishing detection
 - Risk score calculation
 - AI confidence prediction
@@ -16,14 +16,14 @@ A web-based cybersecurity tool that detects phishing URLs using:
 - Spider radar animation
 - Detailed scan reasoning
 
-## 🛠️ Tech Stack
+##  Tech Stack
 - Python (Flask)
 - HTML / CSS / JavaScript
 - dnspython
 - scikit-learn
 - Requests
 
-## ▶️ How to Run
+##  How to Run
 
 ```bash
 git clone <your-repo-url>
